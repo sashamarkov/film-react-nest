@@ -9,13 +9,16 @@ class Session {
   id: string;
 
   @Prop({ required: true })
-  date: string;
+  daytime: string;
 
   @Prop({ required: true })
-  time: string;
+  hall: number;
 
   @Prop({ required: true })
-  hall: string;
+  rows: number;
+
+  @Prop({ required: true })
+  seats: number;
 
   @Prop({ required: true })
   price: number;
@@ -32,23 +35,26 @@ export class Film {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
-  poster: string;
+  @Prop()
+  image: string;
 
-  @Prop({ required: true })
+  @Prop()
+  cover: string;
+
+  @Prop()
   description: string;
 
-  @Prop({ required: true })
-  duration: number;
+  @Prop()
+  about: string;
 
-  @Prop({ type: [String], required: true })
-  genre: string[];
-
-  @Prop({ required: true })
-  releaseYear: number;
-
-  @Prop({ required: true })
+  @Prop()
   rating: number;
+
+  @Prop()
+  director: string;
+
+  @Prop({ type: [String] })
+  tags: string[];
 
   @Prop({ type: [Session], default: [] })
   schedule: Session[];

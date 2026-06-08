@@ -2,53 +2,40 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Film, FilmDocument } from './schemas/film.schema';
-import {
-  FilmResponseDto,
-  FilmScheduleResponseDto,
-  SessionDto,
-} from './dto/films.dto';
 
 @Injectable()
 export class FilmsService {
   constructor(@InjectModel(Film.name) private filmModel: Model<FilmDocument>) {}
 
-  async getAllFilms(): Promise<FilmResponseDto[]> {
+  async getAllFilms() {
     const films = await this.filmModel.find().exec();
     return films.map((film) => ({
       id: film.id,
-      title: film.title,
-      poster: film.poster,
-      description: film.description,
-      duration: film.duration,
-      genre: film.genre,
-      releaseYear: film.releaseYear,
       rating: film.rating,
+      director: film.director || '',
+      tags: film.tags || [],
+      title: film.title,
+      about: film.about || film.description,
+      description: film.description,
+      image: `/content/afisha${film.image}`,
+      cover: `/content/afisha${film.cover}`,
     }));
   }
 
-  async getFilmSchedule(id: string): Promise<FilmScheduleResponseDto> {
+  async getFilmSchedule(id: string) {
     const film = await this.filmModel.findOne({ id }).exec();
     if (!film) {
-      throw new NotFoundException(`Фильм с ID ${id} не найден`);
+      throw new NotFoundException(`Film with id ${id} not found`);
     }
-    const schedule: SessionDto[] = film.schedule.map((session) => ({
+    return film.schedule.map((session) => ({
       id: session.id,
-      date: session.date,
-      time: session.time,
-      hall: session.hall,
+      film: film.id,
+      daytime: session.daytime,
+      hall: session.hall.toString(),
+      rows: session.rows || 10,
+      seats: session.seats || 10,
       price: session.price,
-      taken: session.taken,
+      taken: session.taken || [],
     }));
-    return {
-      id: film.id,
-      title: film.title,
-      poster: film.poster,
-      description: film.description,
-      duration: film.duration,
-      genre: film.genre,
-      releaseYear: film.releaseYear,
-      rating: film.rating,
-      schedule,
-    };
   }
 }

@@ -1,40 +1,26 @@
-import {
-  Injectable,
-  BadRequestException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Film, FilmDocument } from '../films/schemas/film.schema';
-import {
-  CreateOrderDto,
-  OrderResponseDto,
-  OrderItemDto,
-} from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(@InjectModel(Film.name) private filmModel: Model<FilmDocument>) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
-    const { items } = createOrderDto;
+  async createOrder(createOrderDto: any) {
+    const { tickets } = createOrderDto;
+    const results = [];
 
-    for (const item of items) {
-      await this.checkAndBookSeat(item);
+    for (const ticket of tickets) {
+      const result = await this.checkAndBookTicket(ticket);
+      results.push(result);
     }
 
-    const orderId = Math.random().toString(36).substring(2, 15);
-    return {
-      id: orderId,
-      items: items,
-      createdAt: new Date(),
-      status: 'confirmed',
-    };
+    return results;
   }
 
-  private async checkAndBookSeat(item: OrderItemDto): Promise<void> {
-    const { filmId, sessionId, row, seat } = item;
+  private async checkAndBookTicket(ticket: any) {
+    const { film: filmId, session: sessionId, row, seat } = ticket;
     const seatKey = `${row}:${seat}`;
 
     const film = await this.filmModel.findOne({ id: filmId }).exec();
@@ -57,5 +43,16 @@ export class OrderService {
         { $push: { 'schedule.$.taken': seatKey } },
       )
       .exec();
+
+    const orderId = Math.random().toString(36).substring(2, 15);
+    return {
+      id: orderId,
+      film: filmId,
+      session: sessionId,
+      row,
+      seat,
+      daytime: session.daytime,
+      price: session.price,
+    };
   }
 }
