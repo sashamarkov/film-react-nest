@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Film, FilmDocument } from './schemas/film.schema';
+import { ERROR_MESSAGES } from '../common/error-messages';
 
 @Injectable()
 export class FilmsService {
@@ -25,7 +26,7 @@ export class FilmsService {
   async getFilmSchedule(id: string) {
     const film = await this.filmModel.findOne({ id }).exec();
     if (!film) {
-      throw new NotFoundException(`Film with id ${id} not found`);
+      throw new NotFoundException(ERROR_MESSAGES.FILM_NOT_FOUND(id));
     }
     return film.schedule.map((session) => ({
       id: session.id,

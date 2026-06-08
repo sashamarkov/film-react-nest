@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Film, FilmDocument } from '../films/schemas/film.schema';
+import { ERROR_MESSAGES } from '../common/error-messages';
 
 @Injectable()
 export class OrderService {
@@ -25,16 +26,20 @@ export class OrderService {
 
     const film = await this.filmModel.findOne({ id: filmId }).exec();
     if (!film) {
-      throw new BadRequestException(`Film with id ${filmId} not found`);
+      throw new BadRequestException(ERROR_MESSAGES.FILM_NOT_FOUND(filmId));
     }
 
     const session = film.schedule.find((s) => s.id === sessionId);
     if (!session) {
-      throw new BadRequestException(`Session with id ${sessionId} not found`);
+      throw new BadRequestException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND(sessionId),
+      );
     }
 
     if (session.taken.includes(seatKey)) {
-      throw new BadRequestException(`Seat ${row}:${seat} is already taken`);
+      throw new BadRequestException(
+        ERROR_MESSAGES.SEAT_ALREADY_TAKEN(row, seat),
+      );
     }
 
     await this.filmModel
