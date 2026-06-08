@@ -1,16 +1,24 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { randomUUID } from 'crypto';
 import { Film, FilmDocument } from '../films/schemas/film.schema';
 import { ERROR_MESSAGES } from '../common/error-messages';
+import {
+  CreateOrderDto,
+  OrderTicketDto,
+  OrderResponseDto,
+} from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(@InjectModel(Film.name) private filmModel: Model<FilmDocument>) {}
 
-  async createOrder(createOrderDto: any) {
+  async createOrder(
+    createOrderDto: CreateOrderDto,
+  ): Promise<OrderResponseDto[]> {
     const { tickets } = createOrderDto;
-    const results = [];
+    const results: OrderResponseDto[] = [];
 
     for (const ticket of tickets) {
       const result = await this.checkAndBookTicket(ticket);
@@ -20,7 +28,9 @@ export class OrderService {
     return results;
   }
 
-  private async checkAndBookTicket(ticket: any) {
+  private async checkAndBookTicket(
+    ticket: OrderTicketDto,
+  ): Promise<OrderResponseDto> {
     const { film: filmId, session: sessionId, row, seat } = ticket;
     const seatKey = `${row}:${seat}`;
 
@@ -49,9 +59,8 @@ export class OrderService {
       )
       .exec();
 
-    const orderId = Math.random().toString(36).substring(2, 15);
     return {
-      id: orderId,
+      id: randomUUID(),
       film: filmId,
       session: sessionId,
       row,
