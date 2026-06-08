@@ -7,12 +7,17 @@ import * as path from 'node:path';
 import { FilmsModule } from './films/films.module';
 import { OrderModule } from './order/order.module';
 import { HttpExceptionFilter } from './common/http-exception.filter';
+import { validationSchema } from './config/validation.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
+      validationSchema,
+      validationOptions: {
+        abortEarly: false,
+      },
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

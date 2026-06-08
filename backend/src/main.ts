@@ -1,13 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-//import * as morgan from 'morgan';
+import * as morgan from 'morgan';
 import { AppModule } from './app.module';
 import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  //app.use(morgan('dev'));
+  app.use(morgan('dev'));
   app.setGlobalPrefix('api/afisha');
   app.enableCors();
   app.useGlobalPipes(
