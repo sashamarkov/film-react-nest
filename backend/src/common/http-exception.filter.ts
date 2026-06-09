@@ -9,6 +9,12 @@ import {
 import { Request, Response } from 'express';
 import { ERROR_MESSAGES } from './error-messages';
 
+interface HttpExceptionResponse {
+  statusCode: number;
+  message: string | string[];
+  error?: string;
+}
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
@@ -24,10 +30,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      message =
-        typeof exceptionResponse === 'string'
-          ? exceptionResponse
-          : (exceptionResponse as any).message || exception.message;
+
+      if (typeof exceptionResponse === 'string') {
+        message = exceptionResponse;
+      } else {
+        const typedResponse = exceptionResponse as HttpExceptionResponse;
+        if (Array.isArray(typedResponse.message)) {
+          message = typedResponse.message.join(', ');
+        } else {
+          message =
+            typedResponse.message || ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
+        }
+      }
     } else if (exception instanceof Error) {
       message = exception.message;
     }

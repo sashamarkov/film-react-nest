@@ -42,7 +42,7 @@ export class SessionDto {
   @ApiProperty({ example: '2024-06-28T10:00:53+03:00' })
   daytime: string;
 
-  @ApiProperty({ example: '0' })
+  @ApiProperty({ example: 0 })
   hall: string;
 
   @ApiProperty({ example: 10 })
