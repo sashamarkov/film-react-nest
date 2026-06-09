@@ -5,7 +5,8 @@ import { ERROR_MESSAGES } from '../common/error-messages';
 @Injectable()
 export class FilmsService {
   constructor(
-    @Inject('FilmRepository') private readonly filmRepository: FilmRepositoryInterface,
+    @Inject('FilmRepository')
+    private readonly filmRepository: FilmRepositoryInterface,
   ) {}
 
   async getAllFilms() {

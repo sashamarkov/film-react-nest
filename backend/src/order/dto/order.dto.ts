@@ -8,7 +8,6 @@ import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
-  Matches,
 } from 'class-validator';
 import { IsPhone } from '../../common/decorators/is-phone.decorator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -73,9 +72,10 @@ export class CreateOrderDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ 
-    example: '+7 926 123-45-67', 
-    description: 'Телефон пользователя. Поддерживаемые форматы: +79261234567, 89261234567, 8(926)123-45-67, (495)1234567 и др.' 
+  @ApiProperty({
+    example: '+7 926 123-45-67',
+    description:
+      'Телефон пользователя. Поддерживаемые форматы: +79261234567, 89261234567, 8(926)123-45-67, (495)1234567 и др.',
   })
   @IsString()
   @IsNotEmpty()

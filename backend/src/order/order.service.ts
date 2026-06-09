@@ -2,15 +2,22 @@ import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { FilmRepositoryInterface } from '../repository/film.repository.interface';
 import { ERROR_MESSAGES } from '../common/error-messages';
-import { CreateOrderDto, OrderTicketDto, OrderResponseDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  OrderTicketDto,
+  OrderResponseDto,
+} from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(
-    @Inject('FilmRepository') private readonly filmRepository: FilmRepositoryInterface,
+    @Inject('FilmRepository')
+    private readonly filmRepository: FilmRepositoryInterface,
   ) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<OrderResponseDto[]> {
+  async createOrder(
+    createOrderDto: CreateOrderDto,
+  ): Promise<OrderResponseDto[]> {
     const { tickets } = createOrderDto;
     const results: OrderResponseDto[] = [];
 
@@ -22,7 +29,9 @@ export class OrderService {
     return results;
   }
 
-  private async checkAndBookTicket(ticket: OrderTicketDto): Promise<OrderResponseDto> {
+  private async checkAndBookTicket(
+    ticket: OrderTicketDto,
+  ): Promise<OrderResponseDto> {
     const { film: filmId, session: sessionId, row, seat } = ticket;
     const seatKey = `${row}:${seat}`;
 
@@ -33,11 +42,15 @@ export class OrderService {
 
     const session = film.schedule.find((s) => s.id === sessionId);
     if (!session) {
-      throw new BadRequestException(ERROR_MESSAGES.SESSION_NOT_FOUND(sessionId));
+      throw new BadRequestException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND(sessionId),
+      );
     }
 
     if (session.taken.includes(seatKey)) {
-      throw new BadRequestException(ERROR_MESSAGES.SEAT_ALREADY_TAKEN(row, seat));
+      throw new BadRequestException(
+        ERROR_MESSAGES.SEAT_ALREADY_TAKEN(row, seat),
+      );
     }
 
     await this.filmRepository.updateSeats(filmId, sessionId, seatKey);
