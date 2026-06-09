@@ -1,15 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Film, FilmDocument } from './schemas/film.schema';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { FilmRepositoryInterface } from '../repository/film.repository.interface';
 import { ERROR_MESSAGES } from '../common/error-messages';
 
 @Injectable()
 export class FilmsService {
-  constructor(@InjectModel(Film.name) private filmModel: Model<FilmDocument>) {}
+  constructor(
+    @Inject('FilmRepository') private readonly filmRepository: FilmRepositoryInterface,
+  ) {}
 
   async getAllFilms() {
-    const films = await this.filmModel.find().exec();
+    const films = await this.filmRepository.findAll();
     return films.map((film) => ({
       id: film.id,
       rating: film.rating,
@@ -24,7 +24,7 @@ export class FilmsService {
   }
 
   async getFilmSchedule(id: string) {
-    const film = await this.filmModel.findOne({ id }).exec();
+    const film = await this.filmRepository.findOneById(id);
     if (!film) {
       throw new NotFoundException(ERROR_MESSAGES.FILM_NOT_FOUND(id));
     }
