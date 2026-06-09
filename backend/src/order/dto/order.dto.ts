@@ -26,7 +26,7 @@ export class OrderTicketDto {
     description: 'ID сеанса',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   session: string;
 
   @ApiProperty({ example: 3, description: 'Номер ряда (1-10)' })
