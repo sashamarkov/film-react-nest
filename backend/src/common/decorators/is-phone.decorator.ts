@@ -14,6 +14,7 @@ export function IsPhone(validationOptions?: ValidationOptions) {
           const phoneRegex = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/;
           return typeof value === 'string' && phoneRegex.test(value);
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         defaultMessage(_args: ValidationArguments) {
           return 'Телефон должен быть в форматах: +79261234567, 89261234567, 8(926)123-45-67, (495)1234567 и др.';
         },
