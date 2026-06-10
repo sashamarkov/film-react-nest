@@ -2,6 +2,11 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { FilmRepositoryInterface } from '../repository/film.repository.interface';
 import { ERROR_MESSAGES } from '../common/error-messages';
 
+interface GetAllFilmsOptions {
+  limit: number;
+  offset: number;
+}
+
 @Injectable()
 export class FilmsService {
   constructor(
@@ -9,8 +14,9 @@ export class FilmsService {
     private readonly filmRepository: FilmRepositoryInterface,
   ) {}
 
-  async getAllFilms() {
-    const films = await this.filmRepository.findAll();
+  async getAllFilms(options: GetAllFilmsOptions) {
+    const { limit, offset } = options;
+    const films = await this.filmRepository.findAll(limit, offset);
     return films.map((film) => ({
       id: film.id,
       rating: film.rating,
@@ -39,5 +45,9 @@ export class FilmsService {
       price: session.price,
       taken: session.taken || [],
     }));
+  }
+
+  async getTotalCount(): Promise<number> {
+    return this.filmRepository.count();
   }
 }

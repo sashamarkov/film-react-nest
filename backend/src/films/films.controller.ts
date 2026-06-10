@@ -1,5 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { FilmsService } from './films.service';
 import { FilmResponseDto, SessionDto } from './dto/films.dto';
 
@@ -15,9 +15,27 @@ export class FilmsController {
     description: 'Список фильмов',
     type: [FilmResponseDto],
   })
-  async getAllFilms() {
-    const items = await this.filmsService.getAllFilms();
-    return { total: items.length, items };
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Количество записей на странице (по умолчанию 20)' })
+  @ApiQuery({ name: 'offset', required: false, type: Number, description: 'Смещение для пагинации (по умолчанию 0)' })
+  async getAllFilms(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    const parsedLimit = limit ? parseInt(limit, 10) : 20;
+    const parsedOffset = offset ? parseInt(offset, 10) : 0;
+    
+    const items = await this.filmsService.getAllFilms({
+      limit: parsedLimit,
+      offset: parsedOffset,
+    });
+    const total = await this.filmsService.getTotalCount();
+    
+    return {
+      total,
+      limit: parsedLimit,
+      offset: parsedOffset,
+      items,
+    };
   }
 
   @Get(':id/schedule')
