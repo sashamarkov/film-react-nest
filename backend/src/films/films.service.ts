@@ -17,7 +17,9 @@ export class FilmsService {
   async getAllFilms(options: GetAllFilmsOptions) {
     const { limit, offset } = options;
     const films = await this.filmRepository.findAll(limit, offset);
-    return films.map((film) => ({
+    const total = await this.filmRepository.count();
+
+    const items = films.map((film) => ({
       id: film.id,
       rating: film.rating,
       director: film.director || '',
@@ -28,6 +30,13 @@ export class FilmsService {
       image: `/content/afisha${film.image}`,
       cover: `/content/afisha${film.cover}`,
     }));
+
+    return {
+      total,
+      limit,
+      offset,
+      items,
+    };
   }
 
   async getFilmSchedule(id: string) {
@@ -35,7 +44,8 @@ export class FilmsService {
     if (!film) {
       throw new NotFoundException(ERROR_MESSAGES.FILM_NOT_FOUND(id));
     }
-    return film.schedule.map((session) => ({
+
+    const items = film.schedule.map((session) => ({
       id: session.id,
       film: film.id,
       daytime: session.daytime,
@@ -45,6 +55,11 @@ export class FilmsService {
       price: session.price,
       taken: session.taken || [],
     }));
+
+    return {
+      total: items.length,
+      items,
+    };
   }
 
   async getTotalCount(): Promise<number> {

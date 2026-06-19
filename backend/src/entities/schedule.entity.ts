@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Film } from './film.entity';
 
 @Entity('schedules')
@@ -21,7 +27,7 @@ export class Schedule {
   @Column()
   price: number;
 
-  @Column('simple-array', { default: [] })
+  @Column('text', { array: true, default: [] })
   taken: string[];
 
   @ManyToOne(() => Film, (film) => film.schedule)

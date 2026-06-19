@@ -15,27 +15,29 @@ export class FilmsController {
     description: 'Список фильмов',
     type: [FilmResponseDto],
   })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Количество записей на странице (по умолчанию 20)' })
-  @ApiQuery({ name: 'offset', required: false, type: Number, description: 'Смещение для пагинации (по умолчанию 0)' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Количество записей на странице (по умолчанию 20)',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Смещение для пагинации (по умолчанию 0)',
+  })
   async getAllFilms(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ) {
     const parsedLimit = limit ? parseInt(limit, 10) : 20;
     const parsedOffset = offset ? parseInt(offset, 10) : 0;
-    
-    const items = await this.filmsService.getAllFilms({
+
+    return this.filmsService.getAllFilms({
       limit: parsedLimit,
       offset: parsedOffset,
     });
-    const total = await this.filmsService.getTotalCount();
-    
-    return {
-      total,
-      limit: parsedLimit,
-      offset: parsedOffset,
-      items,
-    };
   }
 
   @Get(':id/schedule')
@@ -47,7 +49,6 @@ export class FilmsController {
   })
   @ApiResponse({ status: 404, description: 'Фильм не найден' })
   async getFilmSchedule(@Param('id') id: string) {
-    const items = await this.filmsService.getFilmSchedule(id);
-    return { total: items.length, items };
+    return this.filmsService.getFilmSchedule(id);
   }
 }

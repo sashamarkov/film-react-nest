@@ -10,6 +10,7 @@ import { HttpExceptionFilter } from './common/http-exception.filter';
 import { validationSchema } from './config/validation.schema';
 import { Film } from './entities/film.entity';
 import { Schedule } from './entities/schedule.entity';
+import { RepositoryModule } from './repository/repository.module';
 
 @Module({
   imports: [
@@ -25,13 +26,14 @@ import { Schedule } from './entities/schedule.entity';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get<string>('DATABASE_URL').split('@')[1]?.split(':')[0] || 'localhost',
-        port: parseInt(configService.get<string>('DATABASE_URL').split(':')[3]?.split('/')[0] || '5432', 10),
+        host: 'localhost',
+        port: 5432,
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_URL').split('/').pop() || 'film',
+        database: 'film_db',
         entities: [Film, Schedule],
-        synchronize: true,
+        synchronize: false,
+        logging: true,
       }),
       inject: [ConfigService],
     }),
@@ -39,6 +41,7 @@ import { Schedule } from './entities/schedule.entity';
       rootPath: path.join(__dirname, '..', 'public'),
       serveRoot: '/content/afisha',
     }),
+    RepositoryModule,
     FilmsModule,
     OrderModule,
   ],

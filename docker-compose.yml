@@ -1,14 +1,18 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  postgres:
+    image: postgres:15
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: film_user
+      POSTGRES_PASSWORD: film_password
+      POSTGRES_DB: film_db
     ports:
-      - "27017:27017"
-
+      - "5432:5432"
     volumes:
-      - mongo-data:/data/db
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
 volumes:
-  mongo-data:
+  postgres_data:

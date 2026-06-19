@@ -1,17 +1,30 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  Logger,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { FilmRepositoryInterface } from '../repository/film.repository.interface';
 import { ERROR_MESSAGES } from '../common/error-messages';
-import { CreateOrderDto, OrderTicketDto, OrderResponseDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  OrderTicketDto,
+  OrderResponseDto,
+} from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(
     @Inject('FilmRepository')
     private readonly filmRepository: FilmRepositoryInterface,
   ) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<OrderResponseDto[]> {
+  async createOrder(
+    createOrderDto: CreateOrderDto,
+  ): Promise<OrderResponseDto[]> {
     const { tickets } = createOrderDto;
     const results: OrderResponseDto[] = [];
 
@@ -25,6 +38,24 @@ export class OrderService {
     }
 
     return results;
+  }
+
+  private parseTakenValue(taken: any): string[] {
+    if (Array.isArray(taken)) {
+      return taken;
+    }
+    if (typeof taken === 'string') {
+      try {
+        const parsed = JSON.parse(taken);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+        return [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
   }
 
   private async checkAndBookTicketWithCache(
@@ -41,14 +72,20 @@ export class OrderService {
 
     const session = film.schedule.find((s) => s.id === sessionId);
     if (!session) {
-      throw new BadRequestException(ERROR_MESSAGES.SESSION_NOT_FOUND(sessionId));
+      throw new BadRequestException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND(sessionId),
+      );
     }
 
-    if (session.taken.includes(seatKey)) {
-      throw new BadRequestException(ERROR_MESSAGES.SEAT_ALREADY_TAKEN(row, seat));
+    const takenArray = this.parseTakenValue(session.taken);
+
+    if (takenArray.includes(seatKey)) {
+      throw new BadRequestException(
+        ERROR_MESSAGES.SEAT_ALREADY_TAKEN(row, seat),
+      );
     }
 
-    session.taken.push(seatKey);
+    takenArray.push(seatKey);
     await this.filmRepository.updateSeats(filmId, sessionId, seatKey);
 
     return {
