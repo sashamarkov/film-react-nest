@@ -12,6 +12,10 @@ import { Film } from './entities/film.entity';
 import { Schedule } from './entities/schedule.entity';
 import { RepositoryModule } from './repository/repository.module';
 
+if (typeof globalThis.crypto === 'undefined') {
+  (globalThis as any).crypto = crypto;
+}
+
 @Module({
   imports: [
     ConfigModule.forRoot({
