@@ -27,8 +27,8 @@ export class FilmsService {
       title: film.title,
       about: film.about || film.description,
       description: film.description,
-      image: `/content/afisha${film.image}`,
-      cover: `/content/afisha${film.cover}`,
+      image: film.image,
+      cover: film.cover,
     }));
 
     return {

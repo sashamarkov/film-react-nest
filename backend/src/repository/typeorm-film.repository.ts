@@ -14,24 +14,6 @@ export class TypeOrmFilmRepository implements FilmRepositoryInterface {
     private scheduleRepository: Repository<Schedule>,
   ) {}
 
-  private parseTakenValue(taken: any): string[] {
-    if (Array.isArray(taken)) {
-      return taken;
-    }
-    if (typeof taken === 'string') {
-      try {
-        const parsed = JSON.parse(taken);
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
-        return [];
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  }
-
   async findAll(limit: number = 20, offset: number = 0): Promise<Film[]> {
     const films = await this.filmRepository.find({
       relations: {
@@ -41,13 +23,7 @@ export class TypeOrmFilmRepository implements FilmRepositoryInterface {
       take: limit,
     });
 
-    return films.map((film) => ({
-      ...film,
-      schedule: film.schedule.map((session) => ({
-        ...session,
-        taken: this.parseTakenValue(session.taken),
-      })),
-    }));
+    return films;
   }
 
   async findOneById(id: string): Promise<Film | null> {
@@ -57,13 +33,6 @@ export class TypeOrmFilmRepository implements FilmRepositoryInterface {
         schedule: true,
       },
     });
-
-    if (film) {
-      film.schedule = film.schedule.map((session) => ({
-        ...session,
-        taken: this.parseTakenValue(session.taken),
-      }));
-    }
 
     return film;
   }
@@ -77,7 +46,7 @@ export class TypeOrmFilmRepository implements FilmRepositoryInterface {
       where: { id: sessionId, film_id: filmId },
     });
     if (schedule) {
-      const currentTaken = this.parseTakenValue(schedule.taken);
+      const currentTaken = schedule.taken;
       const updatedTaken = [...currentTaken, seatKey];
       await this.scheduleRepository.update(
         { id: sessionId },
@@ -91,19 +60,11 @@ export class TypeOrmFilmRepository implements FilmRepositoryInterface {
   }
 
   async findByMultipleIds(ids: string[]): Promise<Film[]> {
-    const films = await this.filmRepository.find({
+    return this.filmRepository.find({
       where: { id: In(ids) },
       relations: {
         schedule: true,
       },
     });
-
-    return films.map((film) => ({
-      ...film,
-      schedule: film.schedule.map((session) => ({
-        ...session,
-        taken: this.parseTakenValue(session.taken),
-      })),
-    }));
   }
 }
