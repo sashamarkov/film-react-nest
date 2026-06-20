@@ -8,8 +8,8 @@ RESTful API для онлайн-сервиса бронирования биле
 
 - **Фреймворк:** Nest.js 10.x
 - **Язык:** TypeScript 5.x
-- **База данных:** MongoDB 4.4
-- **ODM:** Mongoose 8.x
+- **База данных:** PostgreSQL 15
+- **ORM:** TypeORM 0.3.x
 - **Валидация:** class-validator + class-transformer
 - **Документация:** Swagger (OpenAPI 3.0)
 - **Логирование:** Morgan
@@ -17,8 +17,10 @@ RESTful API для онлайн-сервиса бронирования биле
 ### Системные требования
 
 - Node.js 18+
-- MongoDB 4.4+
+- PostgreSQL 15+
 - Docker (опционально)
+
+---
 
 ### Установка и запуск
 
@@ -40,31 +42,41 @@ npm install
 Создайте файл `.env` на основе `.env.example`:
 
 ```env
-DATABASE_DRIVER=mongodb
-DATABASE_URL=mongodb://localhost:27017/prac
+DATABASE_DRIVER=postgres
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/film
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=postgres
 NODE_ENV=development
 PORT=3000
 ```
 
-#### 4. Запуск MongoDB
+#### 4. Запуск PostgreSQL
 
 **С использованием Docker:**
-
-```bash
-docker run -d --name mongodb -p 27017:27017 mongo:4.4
-```
-
-**Или через Docker Compose:**
 
 ```bash
 docker compose up -d
 ```
 
+**Или локально:**
+
+```bash
+# Ubuntu/Debian
+sudo systemctl start postgresql
+
+# macOS
+brew services start postgresql@15
+
+# Windows
+net start postgresql-15
+```
+
 #### 5. Импорт начальных данных
 
 ```bash
-docker cp test/mongodb_initial_stub.js mongodb:/tmp/
-docker exec -it mongodb mongo prac --eval "load('/tmp/mongodb_initial_stub.js')"
+docker exec -i postgres_container psql -U postgres -d film < backend/test/prac.init.sql
+docker exec -i postgres_container psql -U postgres -d film < backend/test/prac.films.sql
+docker exec -i postgres_container psql -U postgres -d film < backend/test/prac.shedules.sql
 ```
 
 #### 6. Запуск приложения
@@ -98,11 +110,20 @@ npm run start:prod
 | GET   | `/films`              | Получение списка всех фильмов     |
 | GET   | `/films/:id/schedule` | Получение расписания фильма по ID |
 
+**Параметры пагинации:**
+
+| Параметр | Тип    | По умолчанию | Описание                       |
+| -------- | ------ | ------------ | ------------------------------ |
+| `limit`  | number | 20           | Количество записей на странице |
+| `offset` | number | 0            | Смещение для пагинации         |
+
 **Пример ответа GET /films:**
 
 ```json
 {
   "total": 6,
+  "limit": 20,
+  "offset": 0,
   "items": [
     {
       "id": "0e33c7f6-27a7-4aa0-8e61-65d7e5effecf",
@@ -254,24 +275,34 @@ npm run test:e2e
 ```
 backend/
 ├── src/
-│   ├── common/           # Общие модули (фильтры, сообщения об ошибках)
-│   ├── config/           # Конфигурация и валидация переменных окружения
-│   ├── films/            # Модуль фильмов
-│   │   ├── dto/          # DTO для фильмов
-│   │   ├── schemas/      # Mongoose схема фильма
+│   ├── common/              # Общие модули (фильтры, сообщения об ошибках)
+│   │   ├── decorators/      # Кастомные декораторы валидации
+│   │   ├── error-messages.ts
+│   │   └── http-exception.filter.ts
+│   ├── config/              # Конфигурация и валидация переменных окружения
+│   │   └── validation.schema.ts
+│   ├── films/               # Модуль фильмов
+│   │   ├── dto/             # DTO для фильмов
+│   │   ├── entities/        # TypeORM сущности (Film, Schedule)
 │   │   ├── films.controller.ts
 │   │   ├── films.service.ts
 │   │   └── films.module.ts
-│   ├── order/            # Модуль бронирования
-│   │   ├── dto/          # DTO для заказов
+│   ├── order/               # Модуль бронирования
+│   │   ├── dto/             # DTO для заказов
 │   │   ├── order.controller.ts
 │   │   ├── order.service.ts
 │   │   └── order.module.ts
-│   ├── app.module.ts     # Главный модуль
-│   └── main.ts           # Точка входа
-├── public/               # Статические файлы (постеры)
-├── test/                 # E2E тесты
-├── .env.example          # Пример переменных окружения
+│   ├── repository/          # Слой репозиториев
+│   │   ├── app.repository.ts
+│   │   ├── films.repository.ts
+│   │   ├── repository.errors.ts
+│   │   ├── films.converter.ts
+│   │   └── repository.module.ts
+│   ├── app.module.ts        # Главный модуль
+│   └── main.ts              # Точка входа
+├── public/                  # Статические файлы (постеры)
+├── test/                    # SQL файлы для инициализации БД
+├── .env.example             # Пример переменных окружения
 └── package.json
 ```
 
