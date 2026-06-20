@@ -53,6 +53,12 @@ jobs:
         with:
           node-version: 18.x
 
+      - name: Create .env file
+        run: |
+          cd backend
+          cp .env.example .env
+          echo "NODE_ENV=test" >> .env
+
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
