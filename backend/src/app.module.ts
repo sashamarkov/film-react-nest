@@ -35,7 +35,7 @@ if (typeof globalThis.crypto === 'undefined') {
         port: 5432,
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
-        database: 'film_db',
+        database: 'film',
         entities: [Film, Schedule],
         synchronize: false,
         logging: true,
