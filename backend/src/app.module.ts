@@ -45,6 +45,9 @@ if (typeof globalThis.crypto === 'undefined') {
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'public'),
       serveRoot: '/content/afisha',
+      serveStaticOptions: {
+        index: false,
+      },
     }),
     RepositoryModule,
     FilmsModule,
