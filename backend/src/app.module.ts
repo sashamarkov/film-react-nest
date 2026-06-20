@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER } from '@nestjs/core';
 import * as path from 'node:path';
-import * as crypto from 'node:crypto';
 import { FilmsModule } from './films/films.module';
 import { OrderModule } from './order/order.module';
 import { HttpExceptionFilter } from './common/http-exception.filter';
@@ -12,10 +11,6 @@ import { validationSchema } from './config/validation.schema';
 import { Film } from './entities/film.entity';
 import { Schedule } from './entities/schedule.entity';
 import { RepositoryModule } from './repository/repository.module';
-
-if (typeof globalThis.crypto === 'undefined') {
-  (globalThis as any).crypto = crypto;
-}
 
 @Module({
   imports: [
