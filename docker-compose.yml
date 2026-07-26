@@ -13,6 +13,61 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - film_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: film_backend
+    environment:
+      DATABASE_DRIVER: postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/film
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: film
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - film_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: film_frontend
+    restart: unless-stopped
+    networks:
+      - film_network
+    volumes:
+      - frontend_build:/app/dist
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: film_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - film_network
+    volumes:
+      - frontend_build:/usr/share/nginx/html:ro
 
 volumes:
   postgres_data:
+  frontend_build:
+
+networks:
+  film_network:
+    driver: bridge
